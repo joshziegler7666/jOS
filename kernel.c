@@ -65,6 +65,7 @@ void kernel_main(kernelParameters *kp){
         if (welcomeScreen && scanCode == 0x39){
             welcomeScreen=0;
             clearScreen();
+            printConsole();
         } else {
             if (scanCode & 0x80){                         //key up 
                 if (scanCode == 0xAA){                    //shift up
