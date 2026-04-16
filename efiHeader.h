@@ -1,3 +1,6 @@
+/*
+ * the structs i needed from efi.h
+*/
 #ifndef EFI_HEADER_H
 #define EFI_HEADER_H
 
@@ -75,8 +78,25 @@ struct _EFI_FILE {
     EFI_STATUS (EFIAPI *Write) (EFI_FILE *This, UINTN *BufferSize, VOID *Buffer);
 };
 
-#define SIMPLE_FILE_SYSTEM_PROTOCOL \
-    {0x964e5b22,0x6459,0x11d2,{0x8e,0x39,0x00,0xa0,0xc9,0x69,0x72,0x3b}}
+#define SIMPLE_FILE_SYSTEM_PROTOCOL (EFI_GUID){0x964e5b22,0x6459,0x11d2,{0x8e,0x39,0x00,0xa0,0xc9,0x69,0x72,0x3b}}
+
+typedef struct {
+    UINT32      Revision;
+    EFI_HANDLE  ParentHandle;
+    VOID        *SystemTable;
+    EFI_HANDLE  DeviceHandle;
+    VOID        *FilePath;
+    VOID        *Reserved;
+    UINT32      LoadOptionsSize;
+    VOID        *LoadOptions;
+    VOID        *ImageBase;
+    UINT64      ImageSize;
+    UINT32      ImageCodeType;
+    UINT32      ImageDataType;
+    VOID        *Unload;
+} EFI_LOADED_IMAGE_PROTOCOL;
+
+#define EFI_LOADED_IMAGE_PROTOCOL_GUID  (EFI_GUID){ 0x5b1b31a1, 0x9562, 0x11d2, { 0x8e, 0x3f, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b }}
 
 typedef struct {
     UINT32            RedMask;
@@ -111,13 +131,14 @@ typedef struct _EFI_GRAPHICS_OUTPUT_PROTOCOL {
 } EFI_GRAPHICS_OUTPUT_PROTOCOL;
 
 #define EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID \
-    {0x9042a9de,0x23dc,0x4a38,{0x96,0xfb,0x7a,0xde,0xd0,0x80,0x51,0x6a}}
+    (EFI_GUID){0x9042a9de,0x23dc,0x4a38,{0x96,0xfb,0x7a,0xde,0xd0,0x80,0x51,0x6a}}
 
 typedef struct _EFI_SIMPLE_TEXT_OUTPUT_INTERFACE {
     VOID       *Reset;
     EFI_STATUS (EFIAPI *OutputString)(struct _EFI_SIMPLE_TEXT_OUTPUT_INTERFACE *This, CHAR16 *String);
 } EFI_SIMPLE_TEXT_OUTPUT_INTERFACE;
 
+//dont need most
 typedef struct {
     EFI_TABLE_HEADER Hdr;
     VOID *RaiseTPL;
@@ -136,7 +157,7 @@ typedef struct {
     VOID *InstallProtocolInterface;
     VOID *ReinstallProtocolInterface;
     VOID *UninstallProtocolInterface;
-    VOID *HandleProtocol;
+    EFI_STATUS (EFIAPI *HandleProtocol)(EFI_HANDLE Handle, EFI_GUID *Protocol, VOID **Interface);
     VOID *Reserved;
     VOID *RegisterProtocolNotify;
     VOID *LocateHandle;

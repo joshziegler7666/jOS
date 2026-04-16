@@ -40,3 +40,11 @@ all:
 	make clean
 	make
 	make run
+
+runDebug:
+	qemu-system-x86_64 -bios OVMF.fd -hda fat:rw:./boot/ -net none -monitor stdio -s -S
+
+allDebug:
+	make clean
+	make
+	make runDebug
