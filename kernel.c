@@ -22,6 +22,7 @@ void printPos(int x, int y, char* text, int color);
 int strLen(char *string);
 void clearScreen();
 char* intToStr(int integer);
+int strToInt(char string[]);
 unsigned long long hexToLongLong(char hex[]);
 void checkCommand(char command[]);
 void printConsole();
@@ -36,6 +37,7 @@ short screenWidth;
 short screenHeight;
 int *fb;
 unsigned long long backgroundColor = 0x000000;
+int scale = 10; //devided by 10 every time its used. 15 = 1.5
 
 char text[999] = {0};
 unsigned long long consoleColor = 0x0ffcf4;
@@ -57,13 +59,15 @@ void kernel_main(kernelParameters *kp){
     volatile int *start = (volatile int*)0x8000;
     *start = 21;
 
-    unsigned char keycodes[128] = {[0x1E] = 'a', [0x30] = 'b',[0x2E] = 'c',[0x20] = 'd',[0x12] = 'e',[0x21] = 'f',[0x22] = 'g',[0x23] = 'h',[0x17] = 'i',[0x24] = 'j',[0x25] = 'k',[0x26] = 'l',[0x32] = 'm',[0x31] = 'n',[0x18] = 'o',[0x19] = 'p',[0x10] = 'q',[0x13] = 'r',[0x1F] = 's',[0x14] = 't',[0x16] = 'u',[0x2F] = 'v',[0x11] = 'w',[0x2D] = 'x',[0x15] = 'y',[0x2C] = 'z',[0x39] = ' ',[0x0B] = '0',[0x02] = '1',[0x03] = '2',[0x04] = '3',[0x05] = '4',[0x06] = '5',[0x07] = '6',[0x08] = '7',[0x09] = '8',[0x0A] = '9',};    int shiftPressed = 0;
+    unsigned char keycodes[128] = {[0x1E] = 'a', [0x30] = 'b',[0x2E] = 'c',[0x20] = 'd',[0x12] = 'e',[0x21] = 'f',[0x22] = 'g',[0x23] = 'h',[0x17] = 'i',[0x24] = 'j',[0x25] = 'k',[0x26] = 'l',[0x32] = 'm',[0x31] = 'n',[0x18] = 'o',[0x19] = 'p',[0x10] = 'q',[0x13] = 'r',[0x1F] = 's',[0x14] = 't',[0x16] = 'u',[0x2F] = 'v',[0x11] = 'w',[0x2D] = 'x',[0x15] = 'y',[0x2C] = 'z',[0x39] = ' ',[0x0B] = '0',[0x02] = '1',[0x03] = '2',[0x04] = '3',[0x05] = '4',[0x06] = '5',[0x07] = '6',[0x08] = '7',[0x09] = '8',[0x0A] = '9',};    
+    int shiftPressed = 0;
     unsigned char scanCode;
 
     while (1){
         scanCode = getchar();
-        if (welcomeScreen && scanCode == 0x39){
+        if (welcomeScreen && scanCode == 0x1c){
             welcomeScreen=0;
+            consolePrint("type help for a list of commands\n");
             clearScreen();
             printConsole();
         } else {
@@ -130,7 +134,11 @@ void printPos(int x, int y, char* text, int color){
         for (char row=0; row<8; row++){
             for (char col=0; col<8; col++){
                 if (letters[character][row] & (1 << (7-col))){
-                    fb[((y+row)*screenWidth) + (x+col+(i*8))] = color;
+                    for (int pixely=(y + (row * scale / 10)); pixely<(y + ((row+1) * scale / 10)); pixely++){
+                        for (int pixelx=(x + (col * scale / 10) + (i * 9 * scale / 10)); pixelx<(x + ((col+1) * scale / 10) + (i * 9 * scale / 10)); pixelx++){
+                            fb[pixely*screenWidth + pixelx] = color;
+                        }
+                    }
                 }
             }
         }
@@ -148,9 +156,9 @@ void printConsole(){
             text[i] = '\0';
             int lineLen = strLen(&text[lineIndex]);
             if (lineLen > 0 && (unsigned char)text[lineIndex+lineLen-1] == 0x80){ //error message
-                printPos(300, 100+(ypos*10), &text[lineIndex], 0xFF0F0F);
+                printPos(100, 50+(ypos*10*scale/10), &text[lineIndex], 0xFF0F0F);
             } else {
-                printPos(300, 100+(ypos*10), &text[lineIndex], consoleColor);
+                printPos(100, 50+(ypos*10*scale/10), &text[lineIndex], consoleColor);
             }
             cursorx = strLen(&text[lineIndex]);
             text[i] = current;
@@ -158,7 +166,7 @@ void printConsole(){
             lineIndex = i+1;
         }
     }
-    printPos(300+(cursorx*8), 100+((ypos-1)*10), (char[]){3,'\0'}, 0xFFFFFF); //cursor
+    printPos(100+(cursorx*(9*scale/10)), 50+((ypos-1)*(10*scale/10)), (char[]){3,'\0'}, 0xFFFFFF); //cursor
 }
 
 void consolePrint(char string[]){
@@ -200,6 +208,7 @@ void checkCommand(char input[]){
             "help                 hopefully prints helpfull stuff\n"
             "backgroundColor      lets you change the color of the background with a hex color like 0x00FF00\n"
             "consoleColor         lets you change the color of the console text with a hex color like 0xFF0000\n"
+            "scale                lets you change the scale of the text on screen. input is devided by 10\n"
             "i need to add more commands \x02\n\n");
     }
     else if (strComp(command, "backgroundColor")){
@@ -237,7 +246,10 @@ void checkCommand(char input[]){
             }
         }
         consolePrint("\n");
-    } else if (commandLen > 0){
+    } else if (strComp(command, "scale")){
+        scale = strToInt(params[0]);
+    } 
+    else if (commandLen > 0){
         consolePrint(command);
         consolePrint(" is not a command \x02\n");
     }
@@ -278,6 +290,17 @@ char* intToStr(int integer){
         result[end] = temp;
         start++;
         end--;
+    }
+    return result;
+}
+
+int strToInt(char string[]){
+    int result = 0;
+    int digits = 0;
+    for (int i=0; i<strLen(string); i++){
+        if (string[i] >= 48 * string[i] <= 57){
+            result += (string[i] - 48) + (10 * digits++);
+        }
     }
     return result;
 }

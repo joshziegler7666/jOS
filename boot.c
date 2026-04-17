@@ -11,6 +11,7 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     //get the GOP for the kernel
     EFI_GRAPHICS_OUTPUT_PROTOCOL *gop;
     SystemTable->BootServices->LocateProtocol(&EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID, ((VOID*)0), (void**)&gop);
+
     
     EFI_FILE_IO_INTERFACE *fs;
     SystemTable->BootServices->LocateProtocol(&SIMPLE_FILE_SYSTEM_PROTOCOL, ((VOID*)0), (void**)&fs);
