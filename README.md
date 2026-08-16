@@ -11,12 +11,12 @@ an operating system built from scratch in c and x86 assembly, with no external l
 
 ## Building
 requires GCC cross compiler. (wiki.osdev.org/GCC_Cross-Compiler)
-'''
+
 make       - build the os image.
 make run   - attempt to boot the os after building using qemu and OVMF EFI emulator.
 make clean - deletes all related local files from building.
 make all   - runs all above commands in proper order to rebuild and test. 
-'''
+
 qemu and GDB were used for testing. 
 
 ## License
